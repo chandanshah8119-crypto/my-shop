@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Shop</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        header {
+            background-color: #2874f0;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            font-size: 24px;
+        }
+        .btn-logout {
+            background-color: #ff6161;
+            border: none;
+            padding: 8px 16px;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .center-box {
+            max-width: 400px;
+            margin: 60px auto;
+            text-align: center;
+        }
+        .choice-btn {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-primary {
+            background-color: #2874f0;
+            color: white;
+        }
+        .btn-success {
+            background-color: #388e3c;
+            color: white;
+        }
+        .choice-btn:hover {
+            opacity: 0.9;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .product-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .product-card h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .product-card p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2874f0;
+            margin-bottom: 10px;
+        }
+        .buy-btn {
+            background-color: #fb641b;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>🛍️ My Shop</h1>
+        <div id="userInfo" class="hidden">
+            <span id="userGreeting" style="margin-right: 15px;"></span>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- 1. Selection Screen (Buyer or Seller) -->
+        <div id="roleSelectScreen" class="card center-box">
+            <h2>Welcome to My Shop</h2>
+            <p style="margin: 10px 0 20px; color: #666;">Aap platform par kis tarah judna chahte hain?</p>
+            <button class="choice-btn btn-primary" onclick="showScreen('buyerLogin')">🛒 Buyer (Khariddar)</button>
+            <button class="choice-btn btn-success" onclick="showScreen('sellerLogin')">🏪 Seller (Dukandar)</button>
+        </div>
+
+        <!-- 2. Seller Login Screen -->
+        <div id="sellerLoginScreen" class="card center-box hidden">
+            <h2>Seller Login</h2>
+            <p style="font-size: 12px; color: gray; margin-bottom: 10px;">(Default: ID = <b>admin</b>, Pass = <b>12345</b>)</p>
+            <input type="text" id="sellerId" placeholder="User ID">
+            <input type="password" id="sellerPass" placeholder="Password">
+            <button class="choice-btn btn-success" onclick="loginSeller()">Login as Seller</button>
+            <button class="choice-btn" style="background:#eee;" onclick="showScreen('roleSelect')">Back</button>
+        </div>
+
+        <!-- 3. Buyer Login Screen -->
+        <div id="buyerLoginScreen" class="card center-box hidden">
+            <h2>Buyer Login</h2>
+            <p style="font-size: 12px; color: gray; margin-bottom: 10px;">Apna Name aur Mobile Number enter karein</p>
+            <input type="text" id="buyerName" placeholder="Aapka Naam">
+            <input type="tel" id="buyerPhone" placeholder="Mobile Number (10 digits)">
+            <button class="choice-btn btn-primary" onclick="loginBuyer()">Start Shopping</button>
+            <button class="choice-btn" style="background:#eee;" onclick="showScreen('roleSelect')">Back</button>
+        </div>
+
+        <!-- 4. Seller Dashboard Screen -->
+        <div id="sellerDashboardScreen" class="hidden">
+            <div class="card">
+                <h2>Add New Product</h2>
+                <form id="addProductForm" onsubmit="addProduct(event)">
+                    <label>Product Name</label>
+                    <input type="text" id="prodName" required placeholder="e.g. Smart Watch">
+                    
+                    <label>Price (₹)</label>
+                    <input type="number" id="prodPrice" required placeholder="e.g. 1499">
+                    
+                    <label>Image URL (Optional)</label>
+                    <input type="url" id="prodImg" placeholder="https://example.com/image.jpg (blank chhod sakte hain)">
+                    
+                    <label>Description</label>
+                    <textarea id="prodDesc" rows="3" placeholder="Product details..."></textarea>
+                    
+                    <button type="submit" class="choice-btn btn-success" style="width: auto; padding: 10px 25px;">+ Add Product</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Aapke Listed Products:</h3>
+                <div id="sellerProductList" class="product-grid" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+
+        <!-- 5. Buyer Shopping Screen -->
+        <div id="buyerDashboardScreen" class="hidden">
+            <h2 style="margin-bottom: 20px;">Available Products</h2>
+            <div id="buyerProductList" class="product-grid"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // Specific Seller Credentials
+        const SELLER_CREDENTIALS = {
+            id: "admin",
+            pass: "12345"
+        };
+
+        // Default Sample Products (Agar pehle se koi product na ho)
+        const defaultProducts = [
+            { id: 1, name: "Casual Sneakers", price: 1299, img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400", desc: "Comfortable running shoes" },
+            { id: 2, name: "Wireless Headphones", price: 1999, img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400", desc: "High bass bluetooth headset" }
+        ];
+
+        // Load Products from LocalStorage
+        function getProducts() {
+            let prods = localStorage.getItem("my_shop_products");
+            return prods ? JSON.parse(prods) : defaultProducts;
+        }
+
+        // Save Products to LocalStorage
+        function saveProducts(products) {
+            localStorage.setItem("my_shop_products", JSON.stringify(products));
+        }
+
+        // Screen Navigation Function
+        function showScreen(screen) {
+            document.getElementById("roleSelectScreen").classList.add("hidden");
+            document.getElementById("sellerLoginScreen").classList.add("hidden");
+            document.getElementById("buyerLoginScreen").classList.add("hidden");
+            document.getElementById("sellerDashboardScreen").classList.add("hidden");
+            document.getElementById("buyerDashboardScreen").classList.add("hidden");
+
+            if (screen === 'roleSelect') document.getElementById("roleSelectScreen").classList.remove("hidden");
+            if (screen === 'sellerLogin') document.getElementById("sellerLoginScreen").classList.remove("hidden");
+            if (screen === 'buyerLogin') document.getElementById("buyerLoginScreen").classList.remove("hidden");
+            if (screen === 'sellerDash') document.getElementById("sellerDashboardScreen").classList.remove("hidden");
+            if (screen === 'buyerDash') document.getElementById("buyerDashboardScreen").classList.remove("hidden");
+        }
+
+        // Seller Login
+        function loginSeller() {
+            const id = document.getElementById("sellerId").value.trim();
+            const pass = document.getElementById("sellerPass").value.trim();
+
+            if (id === SELLER_CREDENTIALS.id && pass === SELLER_CREDENTIALS.pass) {
+                document.getElementById("userInfo").classList.remove("hidden");
+                document.getElementById("userGreeting").innerText = "Seller: " + id;
+                renderSellerProducts();
+                showScreen('sellerDash');
+            } else {
+                alert("Galat ID ya Password! Default: admin / 12345");
+            }
+        }
+
+        // Buyer Login
+        function loginBuyer() {
+            const name = document.getElementById("buyerName").value.trim();
+            const phone = document.getElementById("buyerPhone").value.trim();
+
+            if (!name || phone.length < 10) {
+                alert("Kripya apna sahi Name aur 10 digit Mobile Number dalein!");
+                return;
+            }
+
+            document.getElementById("userInfo").classList.remove("hidden");
+            document.getElementById("userGreeting").innerText = "Buyer: " + name;
+            renderBuyerProducts();
+            showScreen('buyerDash');
+        }
+
+        // Add Product (Seller)
+        function addProduct(e) {
+            e.preventDefault();
+            const name = document.getElementById("prodName").value;
+            const price = document.getElementById("prodPrice").value;
+            let img = document.getElementById("prodImg").value.trim();
+            const desc = document.getElementById("prodDesc").value;
+
+            if(!img) {
+                img = "https://via.placeholder.com/300x200?text=No+Image";
+            }
+
+            const products = getProducts();
+            products.push({
+                id: Date.now(),
+                name,
+                price,
+                img,
+                desc
+            });
+
+            saveProducts(products);
+            document.getElementById("addProductForm").reset();
+            alert("Product Safalta-purvak jud gaya!");
+            renderSellerProducts();
+        }
+
+        // Render Seller Products
+        function renderSellerProducts() {
+            const list = document.getElementById("sellerProductList");
+            const prods = getProducts();
+            list.innerHTML = "";
+
+            prods.forEach(p => {
+                list.innerHTML += `
+                    <div class="product-card">
+                        <img src="${p.img}" alt="${p.name}">
+                        <h3>${p.name}</h3>
+                        <p>${p.desc}</p>
+                        <div class="price">₹${p.price}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // Render Buyer Products
+        function renderBuyerProducts() {
+            const list = document.getElementById("buyerProductList");
+            const prods = getProducts();
+            list.innerHTML = "";
+
+            if(prods.length === 0) {
+                list.innerHTML = "<p>Abhi koi product available nahi hai.</p>";
+                return;
+            }
+
+            prods.forEach(p => {
+                list.innerHTML += `
+                    <div class="product-card">
+                        <img src="${p.img}" alt="${p.name}">
+                        <h3>${p.name}</h3>
+                        <p>${p.desc}</p>
+                        <div class="price">₹${p.price}</div>
+                        <button class="buy-btn" onclick="buyProduct('${p.name}', ${p.price})">Buy Now</button>
+                    </div>
+                `;
+            });
+        }
+
+        // Buy Product Action
+        function buyProduct(name, price) {
+            alert(`Dhanyawad! Aapne "${name}" (₹${price}) kharid liya hai. Order confirm ho gaya!`);
+        }
+
+        // Logout
+        function logout() {
+            document.getElementById("userInfo").classList.add("hidden");
+            document.getElementById("sellerId").value = "";
+            document.getElementById("sellerPass").value = "";
+            document.getElementById("buyerName").value = "";
+            document.getElementById("buyerPhone").value = "";
+            showScreen('roleSelect');
+        }
+    </script>
+</body>
+</html>
